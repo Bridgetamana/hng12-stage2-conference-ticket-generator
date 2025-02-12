@@ -1,11 +1,9 @@
-import './App.css';
+import FirstStep from "./component/FirstStep";
 
 function App() {
   return (
-    <div className="App">
-      <h1 className="text-3xl font-bold underline">
-      Hello stage 3!
-    </h1>
+    <div className="flex flex-col justify-center items-center">
+      <FirstStep />
     </div>
   );
 }
