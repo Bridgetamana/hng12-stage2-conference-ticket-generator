@@ -104,7 +104,7 @@ const Navbar = () => {
 
       <button
         type="button"
-        className="flex gap-2 items-center bg-white py-3 px-4 rounded-xl text-[#0a0c11] text-sm font-normal font-jejuMyeongjo uppercase"
+        className="flex gap-2 items-center bg-white hover:bg-[#24A0B5] hover:text-white border border-white py-3 px-4 rounded-xl text-[#0a0c11] text-sm font-normal font-jejuMyeongjo uppercase group"
       >
         my tickets
         <svg
@@ -113,12 +113,25 @@ const Navbar = () => {
           viewBox="0 0 24 24"
           strokeWidth="1.5"
           stroke="currentColor"
-          className="size-5"
+          className="size-5 group-hover:hidden"
         >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
             d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3"
+          />
+        </svg>
+        <svg
+          width="13"
+          height="14"
+          viewBox="0 0 13 14"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="hidden group-hover:flex"
+        >
+          <path
+            d="M0.646447 12.3033C0.451184 12.4986 0.451184 12.8152 0.646447 13.0104C0.841709 13.2057 1.15829 13.2057 1.35355 13.0104L0.646447 12.3033ZM12.8137 1.34315C12.8137 1.06701 12.5899 0.843153 12.3137 0.843152L7.81371 0.843152C7.53757 0.843152 7.31371 1.06701 7.31371 1.34315C7.31371 1.61929 7.53757 1.84315 7.81371 1.84315L11.8137 1.84315L11.8137 5.84315C11.8137 6.11929 12.0376 6.34315 12.3137 6.34315C12.5899 6.34315 12.8137 6.11929 12.8137 5.84315L12.8137 1.34315ZM1.35355 13.0104L12.6673 1.69671L11.9602 0.989599L0.646447 12.3033L1.35355 13.0104Z"
+            fill="#D9D9D9"
           />
         </svg>
       </button>
