@@ -1,5 +1,6 @@
 import FirstStep from "./component/FirstStep";
 import Navbar from "./component/Navbar";
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import SecondStep from "./component/SecondStep";
 import ThirdStep from "./component/ThirdStep";
 
@@ -11,8 +12,13 @@ function App() {
     }}>
       <Navbar />
       <main className="max-w-[600px] mx-auto">
-        <FirstStep />
-        <SecondStep />
+        <Router>
+          <Routes>
+            <Route path="/" element={<FirstStep />} />
+            <Route path="/second-step" element={<SecondStep />} />
+            <Route path="/third-step" element={<ThirdStep />} />
+          </Routes>
+        </Router>
       </main>
     </div>
   );

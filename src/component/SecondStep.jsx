@@ -1,35 +1,115 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
-const SecondStep = () => {
+const SecondStep = ({ onSubmit }) => {
+  const navigate = useNavigate();
+  const [uploadError, setUploadError] = useState("");
   const [image, setImage] = useState(null);
 
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    defaultValues: JSON.parse(localStorage.getItem("attendeeDetails")) || {
+      name: "",
+      email: "",
+      specialRequest: "",
+      profileImage: "",
+    },
+  });
+
+  useEffect(() => {
+    const savedData = localStorage.getItem("attendeeDetails");
+    if (savedData) {
+      const parsedData = JSON.parse(savedData);
+      setValue("name", parsedData.name);
+      setValue("email", parsedData.email);
+      setValue("specialRequest", parsedData.specialRequest);
+      if (parsedData.profileImage) {
+        setImage(parsedData.profileImage);
+      }
+    }
+  }, [setValue]);
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
     if (file) {
-      setImage(URL.createObjectURL(file));
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append(
+        "upload_preset",
+        process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET
+      );
+      formData.append("api_key", process.env.REACT_APP_CLOUDINARY_API_KEY);
+
+      try {
+        const response = await fetch(
+          `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Upload failed:", errorData);
+          setUploadError(`Upload failed: ${errorData.error.message}`);
+          return;
+        }
+
+        const data = await response.json();
+        setValue("profileImage", data.secure_url);
+        setImage(data.secure_url);
+        setUploadError("");
+        console.log("Successfully uploaded", data);
+      } catch (error) {
+        console.error("Upload error:", error);
+        setUploadError("An error occurred during the upload.");
+      }
     }
   };
 
+  const onSubmitForm = (data) => {
+    if (!data.profileImage) {
+      setUploadError("Profile image is required.");
+      return;
+    }
+    localStorage.setItem("attendeeDetails", JSON.stringify(data));
+    if (onSubmit) {
+      onSubmit(data);
+    }
+    navigate("/third-step");
+  };
+
   return (
-    <div className="bg-[#041e22] min-h-screen border border-[#0e464f] rounded-[32px] p-4 md:p-6 lg:p-8 mt-8">
+    <div className="bg-main-color min-h-screen border border-secondary-color rounded-[32px] p-4 md:p-6 lg:p-8 mt-8">
       <header className="space-y-3">
-        <h2 className="text-white text-xl md:text-2xl font-normal font-jejuMyeongjo">
-          Attendee Details
-        </h2>
-        <p className="text-neutral-50 text-base font-normal">Step 2/3</p>
-        <div className="w-full h-1 bg-[#0E464F]">
-          <div className="h-full w-2/3 bg-[#24A0B5]" />
+        <div className="flex justify-between items-center">
+          <h2 className="text-white text-xl md:text-2xl font-normal font-jejuMyeongjo">
+            Attendee Details
+          </h2>
+          <p className="text-neutral-50 text-base font-normal">Step 2/3</p>
+        </div>
+        <div className="w-full h-1 bg-secondary-color">
+          <div className="h-full w-2/3 bg-accent" />
         </div>
       </header>
 
-      <form className="w-full p-6 bg-[#08252b] rounded-[32px] border border-[#0e464e] my-6 md:my-8 space-y-8">
+      <form
+        onSubmit={handleSubmit(onSubmitForm)}
+        className="w-full p-6 bg-[#08252b] rounded-[32px] border border-[#0e464e] my-6 md:my-8 space-y-8"
+      >
         <div className="w-full px-6 pt-6 pb-12 bg-[#042127] rounded-3xl border border-[#07363e] flex flex-col gap-8">
-          <div className=" text-neutral-50 text-base font-normal">
+          <div className="text-neutral-50 text-base font-normal">
             Upload Profile Photo
           </div>
           <div className="w-full bg-black/20 flex justify-center items-center">
             <div className="w-full h-60 bg-black/20 rounded-sm flex justify-center items-center">
-              <div className="w-60 h-[280px] p-6 bg-[#0e464e] rounded-[32px] border-4 border-[#23a0b5]/50 flex-col justify-center items-center gap-4 inline-flex relative">
+              <div className="w-60 h-[280px] p-6 bg-[#0e464e] rounded-[32px] border-4 border-button-color/50 flex-col justify-center items-center gap-4 inline-flex relative">
                 {image ? (
                   <>
                     <img
@@ -97,7 +177,7 @@ const SecondStep = () => {
                   id="profile-photo-upload"
                   className="hidden"
                   accept="image/*"
-                  onChange={handleImageChange}
+                  onChange={handleImageUpload}
                 />
               </div>
             </div>
@@ -117,9 +197,21 @@ const SecondStep = () => {
             <input
               id="name"
               type="text"
-              className="p-3 w-full h-[50px] bg-[#042127] rounded-xl border border-[#07373F]"
+              className={`outline-none p-3 w-full h-[50px] bg-[#042127] rounded-xl border ${
+                errors.name ? "border-red-500" : "border-[#07373F]"
+              } text-white`}
               placeholder="Your Name"
+              {...register("name", {
+                required: "Name is required",
+                minLength: {
+                  value: 2,
+                  message: "Name must be at least 2 characters",
+                },
+              })}
             />
+            {errors.name && (
+              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+            )}
           </div>
 
           <div className="flex flex-col gap-2">
@@ -129,7 +221,11 @@ const SecondStep = () => {
             >
               Enter your email *
             </label>
-            <div className="w-full p-3 flex items-center gap-2 bg-[#042127] rounded-xl border border-[#07373F]">
+            <div
+              className={`w-full p-3 flex items-center gap-2 bg-[#042127] rounded-xl border ${
+                errors.email ? "border-red-500" : "border-[#07373F]"
+              }`}
+            >
               <svg
                 width="24"
                 height="24"
@@ -143,12 +239,24 @@ const SecondStep = () => {
                 />
               </svg>
               <input
-                id="name"
-                type="text"
-                className="w-full bg-[#042127]"
+                id="email"
+                type="email"
+                className="outline-none w-full bg-[#042127] text-white"
                 placeholder="hello@avioflagos.io"
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: "Invalid email address",
+                  },
+                })}
               />
             </div>
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col gap-2">
@@ -160,22 +268,36 @@ const SecondStep = () => {
             </label>
             <textarea
               id="specialRequest"
-              className="w-full h-[127px] p-3 rounded-xl border border-[#07363e] bg-[#042127] flex text-[#aaaaaa] text-base font-normal"
+              className={`outline-none w-full h-[127px] p-3 rounded-xl border ${
+                errors.specialRequest ? "border-red-500" : "border-[#07363e]"
+              } bg-[#042127] text-white`}
               placeholder="we wanna hear it..."
+              {...register("specialRequest", {
+                maxLength: {
+                  value: 500,
+                  message: "Special request must not exceed 500 characters",
+                },
+              })}
             />
+            {errors.specialRequest && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.specialRequest.message}
+              </p>
+            )}
           </div>
         </div>
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
             type="submit"
-            className="h-12 px-6 py-3 bg-[#23a0b5] rounded-lg text-white font-normal font-jejuMyeongjo hover:bg-[#1b8a9e] transition-colors md:order-2"
+            className="h-12 px-6 py-3 bg-button-color rounded-lg text-white font-normal font-jejuMyeongjo hover:bg-[#1b8a9e] transition-colors md:order-2"
           >
             Get My Free Ticket
           </button>
           <button
             type="button"
-            className="h-12 px-6 py-3 rounded-lg border border-[#23a0b5] text-[#23a0b5] font-normal font-jejuMyeongjo hover:bg-[#23a0b5] hover:text-white transition-colors md:order-1"
+            onClick={() => navigate(-1)}
+            className="h-12 px-6 py-3 rounded-lg border border-button-color text-button-color font-normal font-jejuMyeongjo hover:bg-button-color hover:text-white transition-colors md:order-1"
           >
             Back
           </button>
