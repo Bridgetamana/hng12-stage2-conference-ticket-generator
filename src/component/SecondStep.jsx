@@ -28,9 +28,7 @@ const SecondStep = ({ onSubmit }) => {
       setValue("name", parsedData.name);
       setValue("email", parsedData.email);
       setValue("specialRequest", parsedData.specialRequest);
-      if (parsedData.profileImage) {
-        setImage(parsedData.profileImage);
-      }
+      setValue("profileImage", parsedData.profileImage);
     }
   }, [setValue]);
 
@@ -39,12 +37,8 @@ const SecondStep = ({ onSubmit }) => {
     if (file) {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append(
-        "upload_preset",
-        process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET
-      );
-      formData.append("api_key", process.env.REACT_APP_CLOUDINARY_API_KEY);
-
+      formData.append("upload_preset", process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET);
+    
       try {
         const response = await fetch(
           `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload`,
@@ -53,14 +47,14 @@ const SecondStep = ({ onSubmit }) => {
             body: formData,
           }
         );
-
+  
         if (!response.ok) {
           const errorData = await response.json();
           console.error("Upload failed:", errorData);
-          setUploadError(`Upload failed: ${errorData.error.message}`);
+          setUploadError(`Upload failed: ${errorData.error?.message}`);
           return;
         }
-
+  
         const data = await response.json();
         setValue("profileImage", data.secure_url);
         setImage(data.secure_url);
@@ -182,6 +176,7 @@ const SecondStep = ({ onSubmit }) => {
               </div>
             </div>
           </div>
+            {uploadError && <p className="text-red-500">{uploadError}</p>}
         </div>
 
         <div className="w-full h-1 bg-[#07373F]"></div>
