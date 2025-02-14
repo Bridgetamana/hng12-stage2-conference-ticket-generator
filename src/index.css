@@ -5,3 +5,27 @@
 body {
   background-color: #02191D;
 }
+
+@font-face {
+  font-family: 'jejumyeongjo';
+  src: url('../public/fonts/jejumyeongjo-regular-webfont.woff2') format('woff2'),
+       url('../public/fonts/jejumyeongjo-regular-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'roboto';
+  src: url('../public/fonts/roboto-variablefont_wdthwght-webfont.woff2') format('woff2'),
+       url('../public/fonts/roboto-variablefont_wdthwght-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'roadRage';
+  src: url('../public/fonts/roadrage-regular-webfont.woff2') format('woff2'),
+       url('../public/fonts/roadrage-regular-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
